@@ -1,12 +1,27 @@
 import Head from "next/head";
 import Image from "next/image";
-import { Inter } from "next/font/google";
+// import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import Banner from "@/components/banner";
+import Card from "@/components/card";
+import coffeeStoresData from "../data/coffee-stores.json";
 
-const inter = Inter({ subsets: ["latin"] });
+// server side code
+export async function getStaticProps(context) {
+  // I can alse fetch the api
+  // const data = fetch(url); and send it to in the props
+  console.log("context", context);
+  return {
+    props: {
+      coffeeStores: coffeeStoresData, // or I can write it in the key value pair
+    },
+  };
+}
 
-export default function Home() {
+// client side code
+
+export default function Home(props) {
+  console.log("props", props);
   const handleOnBtnClick = () => {
     console.log("handle btn click");
   };
@@ -23,6 +38,30 @@ export default function Home() {
           buttonText="View stores nearby"
           handleOnClick={handleOnBtnClick}
         />
+        {props.coffeeStores.length > 0 && (
+          <>
+            <h2 className={styles.heading2}>Toronto Store</h2>
+            <div className={styles.cardLayout}>
+              {props.coffeeStores.map((coffeeStore) => (
+                <Card
+                  key={coffeeStore.id}
+                  name={coffeeStore.name}
+                  imgUrl={coffeeStore.imgUrl}
+                  href={`/coffee-store/${coffeeStore.id}`}
+                  className={styles.card}
+                />
+              ))}
+            </div>
+          </>
+        )}
+        <div className={styles.heroImage}>
+          <Image
+            src="/static/hero-image.png"
+            width={700}
+            height={400}
+            alt="hero-image"
+          />
+        </div>
       </main>
     </>
   );

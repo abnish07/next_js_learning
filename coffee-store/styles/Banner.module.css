@@ -1,7 +1,7 @@
 /** By default,
 this is a mobile breakpoint **/
 .container {
-  margin-bottom: 6rem;
+  margin-bottom: 1rem;
   position: relative;
   z-index: 2;
 }
@@ -10,7 +10,6 @@ this is a mobile breakpoint **/
   letter-spacing: -0.025em;
   font-weight: 800;
   color: var(--text-black);
-
   font-size: 3rem /* 48px */;
   line-height: 1;
 }
