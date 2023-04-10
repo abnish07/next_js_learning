@@ -5,15 +5,18 @@ import styles from "@/styles/Home.module.css";
 import Banner from "@/components/banner";
 import Card from "@/components/card";
 import coffeeStoresData from "../data/coffee-stores.json";
+import { fetchCoffeeStoresApi } from "@/lib/coffee-stores";
+import useTrackLocation from "@/hooks/use-track-location";
 
 // server side code
 export async function getStaticProps(context) {
   // I can alse fetch the api
   // const data = fetch(url); and send it to in the props
-  console.log("context", context);
+  const coffeeStores = await fetchCoffeeStoresApi();
+
   return {
     props: {
-      coffeeStores: coffeeStoresData, // or I can write it in the key value pair
+      coffeeStores, // or I can write it in the key value pair
     },
   };
 }
@@ -22,8 +25,12 @@ export async function getStaticProps(context) {
 
 export default function Home(props) {
   console.log("props", props);
+  const { latLong, handleTrackLocation, locationErrorMsg, isLoading } =
+    useTrackLocation();
+  console.log({ latLong, locationErrorMsg });
   const handleOnBtnClick = () => {
     console.log("handle btn click");
+    handleTrackLocation();
   };
   return (
     <>
@@ -35,9 +42,10 @@ export default function Home(props) {
       </Head>
       <main className={styles.main}>
         <Banner
-          buttonText="View stores nearby"
+          buttonText={isLoading ? "Loading..." : "View stores nearby"}
           handleOnClick={handleOnBtnClick}
         />
+        {locationErrorMsg && `Something went wrong ${locationErrorMsg}`}
         {props.coffeeStores.length > 0 && (
           <>
             <h2 className={styles.heading2}>Toronto Store</h2>
@@ -46,7 +54,10 @@ export default function Home(props) {
                 <Card
                   key={coffeeStore.id}
                   name={coffeeStore.name}
-                  imgUrl={coffeeStore.imgUrl}
+                  imgUrl={
+                    coffeeStore.imgUrl ||
+                    "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+                  }
                   href={`/coffee-store/${coffeeStore.id}`}
                   className={styles.card}
                 />
@@ -54,14 +65,14 @@ export default function Home(props) {
             </div>
           </>
         )}
-        <div className={styles.heroImage}>
+        {/* <div className={styles.heroImage}>
           <Image
             src="/static/hero-image.png"
             width={700}
             height={400}
             alt="hero-image"
           />
-        </div>
+        </div> */}
       </main>
     </>
   );
