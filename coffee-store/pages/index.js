@@ -1,10 +1,11 @@
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 // import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import Banner from "@/components/banner";
 import Card from "@/components/card";
-import coffeeStoresData from "../data/coffee-stores.json";
+// import coffeeStoresData from "../data/coffee-stores.json";
 import { fetchCoffeeStoresApi } from "@/lib/coffee-stores";
 import useTrackLocation from "@/hooks/use-track-location";
 
@@ -27,11 +28,34 @@ export default function Home(props) {
   console.log("props", props);
   const { latLong, handleTrackLocation, locationErrorMsg, isLoading } =
     useTrackLocation();
-  console.log({ latLong, locationErrorMsg });
+  const [coffeeStoresData, setCoffeeStoresData] = useState("");
+  const [coffeeStoresError, setCoffeeStoresError] = useState(null);
+
+  console.log("latlong locationErrorMsg", latLong, locationErrorMsg);
+
+  useEffect(() => {
+    async function setCoffeeStoresByLocation() {
+      console.log("latLong in use effect", latLong);
+      if (latLong) {
+        try {
+          const fetchedCoffeeStores = await fetchCoffeeStoresApi(latLong, 30);
+          setCoffeeStoresData(fetchedCoffeeStores);
+          // set the coffee store
+          console.log("fetchedCoffeeStores", fetchedCoffeeStores);
+        } catch (err) {
+          console.log(err);
+          setCoffeeStoresError(err.message);
+        }
+      }
+    }
+    setCoffeeStoresByLocation();
+  }, [latLong]);
+
   const handleOnBtnClick = () => {
     console.log("handle btn click");
     handleTrackLocation();
   };
+  console.log("coffee stores near me", coffeeStoresData);
   return (
     <>
       <Head>
@@ -46,6 +70,28 @@ export default function Home(props) {
           handleOnClick={handleOnBtnClick}
         />
         {locationErrorMsg && `Something went wrong ${locationErrorMsg}`}
+        {coffeeStoresError && `Something went wrong ${coffeeStoresError}`}
+
+        {coffeeStoresData.length > 0 && (
+          <>
+            <h2 className={styles.heading2}>Coffee Stores Near me</h2>
+            <div className={styles.cardLayout}>
+              {coffeeStoresData.map((coffeeStore) => (
+                <Card
+                  key={coffeeStore.id}
+                  name={coffeeStore.name}
+                  imgUrl={
+                    coffeeStore.imgUrl ||
+                    "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+                  }
+                  href={`/coffee-store/${coffeeStore.id}`}
+                  className={styles.card}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
         {props.coffeeStores.length > 0 && (
           <>
             <h2 className={styles.heading2}>Toronto Store</h2>
